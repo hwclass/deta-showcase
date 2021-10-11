@@ -1,0 +1,1 @@
+{"id":"426ac9c7-45fd-4eb2-b98a-dc40da369842","space":11754,"runtime":"nodejs14.x","name":"generate-text-to-speech","path":"0ps98g","project":"a06kk5r2","account":"144798365827","region":"eu-west-2","deps":["express@^4.17.1","@google-cloud/text-to-speech@^3.3.1","playwright@^1.15.2","deta@^1.0.1","dotenv@^10.0.0"],"envs":null,"public":true,"log_level":"debug","cron":""}

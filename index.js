@@ -1,139 +1,75 @@
 const express = require("express");
-const textToSpeech = require("@google-cloud/text-to-speech");
 
 const db  = require("./init-db")
 
+// please start with `deta watch`
 const app = express();
 
+// 1) Just try to ping, which should work well
 app.get("/ping", async (req, res) => {
   res.send("pong");
 });
 
-// store in Deta Base
-const apps = [
-  {
-    id: 0,
-    main: "https://www.sporx.com",
-    pageId: 0,
-    urls: [
-      {
-        id: 0,
-        title: "Vitor Pereira: Mesut benim liderim!",
-        url: "https://www.sporx.com/futbol/ekstra/vitor-pereira-mesut-benim-liderimSXGLQ55359SXQ?sira=5",
-      },
-    ],
-  },
-];
-
+// Example payload for storing an "app" object 
+// (not the `app` derived from express as an instance)
+/*
 {
-  "key": "zwaopiku6mvs",
-  "value": "wg8b71gahpb7"
+	"name": "name here",
+	"homeUrl": "https://www.somesite.com",
+	"urls": [
+		{
+			"id": "0",
+			"title": "Title of the page here!",
+			"url": "https://www.somesite.com/title-of-the-page-here"
+		}
+	]
 }
+*/
 
-// Add new apps
-// Params: name, home, urls
-// POST payload: 
-// {
-// 	"name": "sporx",
-// 	"homeUrl": "https://www.sporx.com",
-// 	"urls": [
-// 		{
-// 			"id": "0",
-// 			"title": "Vitor Pereira: Mesut benim liderim!",
-// 			"url": "https://www.sporx.com/futbol/ekstra/vitor-pereira-mesut-benim-liderimSXGLQ55359SXQ?sira=5"
-// 		}
-// 	]
-// }
+// The below lines are taken & and updated
+// from the example here:
+// https://docs.deta.sh/docs/base/node_tutorial
+
+/*
+app.post('/users', async (req, res) => {
+  const { name, age, hometown } = req.body;
+  const toCreate = { name, age, hometown};
+  const insertedUser = await db.put(toCreate); // put() will autogenerate a key for us
+  res.status(201).json(insertedUser);
+});
+*/
+
+// 2) Tried to emitate the lines above, only props are different,
+// but the following is just returned after the PUT action has been done
 app.post('/apps', async (req, res) => {
   const { name, homeUrl, urls } = req.body;
   const toCreate = { name, homeUrl, urls };
   const insertedApp = await db.put(toCreate);
   res.status(201).json(insertedApp);
 });
+// Result:
+/*
+{
+  "key": "pekspnpad347"
+}
+*/
 
-// app.get("/apps/:id", async (req, res) => {
-//   // get apps from Deta Base
-
-//   const appId = req.params.id;
-
-//   const { urls } = apps.filter((app) => app.id === parseInt(appId))[0];
-
-//   // send urls to client to be listed for selection
-//   res.send({ urls });
-// });
-
-app.get('/apps/:id', async (req, res) => {
-  const { id } = req.params;
-  const app = await db.insert(id);
-  if (app) {
-    res.json(app);
-  } else {
-    res.status(404).json({"message": "app not found"});
-  }
-});
-
-app.post("/play", async (req, res) => {
-  const { appId, urlId } = req.params;
-
-  // TODO: get the apps & find the url filtered from them
-  const app = await db.get({ id: appId })
-
-  const url = apps
-    .map((app) => app)[0]
-    .urls.filter((url) => url.id === parseInt(urlId));
-
-  // let payload = {
-  //   status: 200,
-  //   message: "Found the url, streaming the widget the the client.",
-  //   appId: appId,
-  //   urlId: urlId,
-  //   url: url[0]
-  // };
-
-  const payload = app
-
-  // payload.url = url[0];
-
-  // if (!url || url.length === 0) {
-  //   payload = {
-  //     status: 204,
-  //     message: "No content.",
-  //   };
-  // } else {
-  //   payload.url = url;
-  // }
-
-  res.json(app);
-});
-
-// app.post("/apps", async (req, res) => {
-//   const newApp = req.body 
-  // {
-  //   "name": "sporx",
-  //   "homeUrl": "https://www.sporx.com",
-  //   "urls": [
-  //     {
-  //       "id": "0",
-  //       "title": "Vitor Pereira: Mesut benim liderim!",
-  //       "url": "https://www.sporx.com/futbol/ekstra/vitor-pereira-mesut-benim-liderimSXGLQ55359SXQ?sira=5"
-  //     }
-  //   ]
-  // }
-//   db.put(newApp)
-//   res.send({
-//     status: 200,
-//     message: "Data created"
-//   })
-// })
-
+// 3) That's the GET case of what has been going wrong
+// Please try to get any `app` from the Deta Base
+// via https://<DETA-URL>.deta.dev/apps/
+// which is pointing the following block:
 app.get("/apps/:id", async (req, res) => {
   const { id } = req.params;
-  const app = await db.get(id)
-  if (app) {
-    res.json(app);
+  const appFound = await db.get(id)
+  if (appFound) {
+    res.json(appFound);
   } else {
     res.status(404).json({"message": "app not found"});
   }
 })
+// Result is instead of the whole app object, just the key itself:
+// {
+//   "key": "pekspnpad347"
+// }
 
 module.exports = app;
